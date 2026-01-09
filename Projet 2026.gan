@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><project name="Untitled Gantt Project" company="" webLink="http://" view-date="2026-02-02" view-index="0" gantt-divider-location="571" resource-divider-location="300" version="3.3.3312" locale="fr_FR">
+    <description/>
+    <view zooming-state="default:6" id="gantt-chart">
+        <field id="tpd3" name="Nom" width="325" order="0"/>
+        <field id="tpd4" name="Date de début" width="122" order="1"/>
+        <field id="tpd5" name="Date de fin" width="123" order="2"/>
+        <field id="tpd15" name="Notes" width="20" order="3"/>
+        <option id="filter.completedTasks" value="false"/>
+        <option id="filter.dueTodayTasks" value="false"/>
+        <option id="filter.overdueTasks" value="false"/>
+        <option id="filter.inProgressTodayTasks" value="false"/>
+    </view>
+    <view id="resource-table">
+        <field id="0" name="Nom" width="210" order="0"/>
+        <field id="1" name="Rôle par défaut" width="86" order="1"/>
+    </view>
+    <!-- -->
+    <calendars>
+        <day-types>
+            <day-type id="0"/>
+            <day-type id="1"/>
+            <default-week id="1" name="default" sun="1" mon="0" tue="0" wed="0" thu="0" fri="0" sat="1"/>
+            <only-show-weekends value="false"/>
+            <overriden-day-types/>
+            <days/>
+        </day-types>
+    </calendars>
+    <tasks empty-milestones="true">
+        <taskproperties>
+            <taskproperty id="tpd0" name="type" type="default" valuetype="icon"/>
+            <taskproperty id="tpd1" name="priority" type="default" valuetype="icon"/>
+            <taskproperty id="tpd2" name="info" type="default" valuetype="icon"/>
+            <taskproperty id="tpd3" name="name" type="default" valuetype="text"/>
+            <taskproperty id="tpd4" name="begindate" type="default" valuetype="date"/>
+            <taskproperty id="tpd5" name="enddate" type="default" valuetype="date"/>
+            <taskproperty id="tpd6" name="duration" type="default" valuetype="int"/>
+            <taskproperty id="tpd7" name="completion" type="default" valuetype="int"/>
+            <taskproperty id="tpd8" name="coordinator" type="default" valuetype="text"/>
+            <taskproperty id="tpd9" name="predecessorsr" type="default" valuetype="text"/>
+        </taskproperties>
+        <task id="0" uid="3d2f5355be5a4322929f7b9c96d46d1b" name="Sysml" meeting="false" start="2026-01-05" duration="5" complete="0" expand="true"/>
+        <task id="1" uid="5de1f6088b3048388b1506dedd23f581" name="Jessy SACLIER" meeting="false" start="2026-01-12" duration="90" complete="0" expand="false">
+            <task id="2" uid="b17a47a461434f369f0eee46affb2c07" name="Communication I2C" meeting="false" start="2026-01-12" duration="15" complete="0" expand="true"/>
+            <task id="3" uid="0ede57c33ffc486c8d4cfcc1c1af393c" name="Protocole communication" meeting="false" start="2026-02-02" duration="15" complete="0" expand="true"/>
+            <task id="4" uid="3dddeff39056402292cf623ec93225a2" name="Calcul niveau d'eau" meeting="false" start="2026-03-09" duration="10" complete="0" expand="true"/>
+            <task id="5" uid="d36a0cb3c32f4206a204e7f53290e525" name="Traiter mesures" meeting="false" start="2026-03-23" duration="5" complete="0" expand="true"/>
+            <task id="6" uid="cb52efb4a643486cb7814c7b03ec1669" name="Saisi de schéma + routage" meeting="false" start="2026-03-30" duration="15" complete="0" expand="true"/>
+            <task id="7" uid="ee03d8dc417946b88b43d9b35545c93b" name="Programme test" meeting="false" start="2026-05-04" duration="10" complete="0" expand="true"/>
+        </task>
+        <task id="8" uid="e8392e1a1d754d78922fc808ce805e11" name="Théo CRAYS" meeting="false" start="2026-01-12" duration="90" complete="0" expand="false">
+            <task id="9" uid="d8b717ccfa344022985cdf0c15ea811f" name="Commande moteur ESP32" meeting="false" start="2026-01-12" duration="10" complete="0" expand="true"/>
+            <task id="10" uid="f6c41eec8a8c47248065a5b29d14af9f" name="Pilotage et mesure" meeting="false" start="2026-01-26" duration="10" complete="0" expand="true"/>
+            <task id="11" uid="809f9104ad2f4498aa7a28400fcbb799" name="Blocage vanne décharge" meeting="false" start="2026-02-09" duration="5" complete="0" expand="true"/>
+            <task id="12" uid="332538f513f4437194a41738eaa30d5c" name="Mesures invalides ECDV" meeting="false" start="2026-02-16" duration="5" complete="0" expand="true"/>
+            <task id="13" uid="eb59efe225fb4ff3b28afb1f6a7d1824" name="Schéma et routage" meeting="false" start="2026-03-09" duration="15" complete="0" expand="true"/>
+            <task id="14" uid="7e4bc24fa8564c30aebd1b70777c3d43" name="Tests programmes" meeting="false" start="2026-03-30" duration="15" complete="0" expand="true"/>
+            <task id="15" uid="848b44b43ceb4163a3cb648fdd0ea326" name="Intégration fonctions finales" meeting="false" start="2026-05-04" duration="10" complete="0" expand="true"/>
+        </task>
+        <task id="16" uid="4478a7d5abbf4b8a8ad943d632a90402" name="Anaël Descamps" meeting="false" start="2026-01-12" duration="90" complete="0" expand="false">
+            <task id="17" uid="47f0cc7b43ef414bba56373cdc4d08f4" name="Mesure tension baterie" meeting="false" start="2026-01-12" duration="10" complete="0" expand="true"/>
+            <task id="18" uid="587436cfa6524920a9e8d87640b90ab3" name="Module MPPT, panneau solaire et autonomie" meeting="false" start="2026-01-26" duration="20" complete="0" expand="true"/>
+            <task id="19" uid="97ae59e66f964be18758e6134a54f0f4" name="Schéma et routage" meeting="false" start="2026-03-09" duration="15" complete="0" expand="true"/>
+            <task id="20" uid="6968a40f3d434f7698fbd10d8f90a036" name="Test" meeting="false" start="2026-03-30" duration="10" complete="0" expand="true"/>
+            <task id="21" uid="076791ccb58b4eb7a9922eb07d6fa985" name="IHM, page WEB" meeting="false" start="2026-04-13" duration="15" complete="0" expand="true"/>
+            <task id="22" uid="a2635ca63c0046e293ecb52647538e79" name="Integration des differentes fonctions" meeting="false" start="2026-05-04" duration="10" complete="0" expand="true"/>
+        </task>
+        <task id="23" uid="72ee684d29f94986a859a2fcc2f7e35f" name="Chris Gavo" meeting="false" start="2026-01-12" duration="90" complete="0" expand="false">
+            <task id="24" uid="2ed02535288644f29fdadeb79854aebf" name="module GSM sur ESP32 (local)" meeting="false" start="2026-01-12" duration="17" complete="0" expand="true"/>
+            <task id="25" uid="fc92f713d0c946c3afd2b11f9336075e" name="Communication GSM (principal)" meeting="false" start="2026-02-05" duration="12" complete="0" expand="true"/>
+            <task id="26" uid="385dcef5d9224382a073016700832655" name="protocole de mesure du niveau d'eau chaque heure et état du système" meeting="false" start="2026-03-09" duration="17" complete="0" expand="true"/>
+            <task id="27" uid="dad1a1a4914f42c4b2d3cf137a87181d" name="Saisi de schéma et routage" meeting="false" start="2026-04-02" duration="12" complete="0" expand="true"/>
+            <task id="28" uid="84f9561806a14e40aae42c2da2cb1dae" name="Programme de test" meeting="false" start="2026-05-04" duration="10" complete="0" expand="true"/>
+        </task>
+        <task id="30" uid="5db1c1fd9e54411caae088431f1addaf" name="Mateisse Michalak" meeting="false" start="2026-01-12" duration="90" complete="0" expand="false">
+            <task id="31" uid="81389e893d484ea5b241226063236eb4" name="Module Lora avec ESP32" meeting="false" start="2026-01-12" duration="15" complete="0" expand="true"/>
+            <task id="32" uid="04251720948841fbb3295d8dd2f8fcd9" name="Communication avec module Lora" meeting="false" start="2026-02-02" duration="15" complete="0" expand="true"/>
+            <task id="33" uid="243bc89c6270461ca3351b22cf4e0cb0" name="Protocole communication eau moyen" meeting="false" start="2026-03-09" duration="15" complete="0" expand="true"/>
+            <task id="34" uid="7b3a3b9526a44686838a0e1014c26a91" name="Saisie de schéma et routage" meeting="false" start="2026-03-30" duration="15" complete="0" expand="true"/>
+            <task id="35" uid="b837070c02aa41ceb85c44cd754ee2fd" name="Test" meeting="false" start="2026-05-04" duration="10" complete="0" expand="true"/>
+        </task>
+    </tasks>
+    <resources/>
+    <allocations/>
+    <vacations/>
+    <previous/>
+    <roles roleset-name="Default"/>
+</project>
