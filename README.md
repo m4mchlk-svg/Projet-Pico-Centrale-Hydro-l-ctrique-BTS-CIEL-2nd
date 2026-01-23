@@ -19,5 +19,5 @@
 
 ## 4_Communication_GSM : Chris
 
-## 5_Charge_batterie_et_IHM : Anaêl
+## 5_Charge_batterie_et_IHM : Anaël
 
