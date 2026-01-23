@@ -16,6 +16,7 @@
 ## 2_Contrôle_vanne_et_moteur : Théo
 
 ## 3_Communication_Lora : Matheïs
++ Module Datasheet
 + LoRa emission
 + LoRa reception
 
