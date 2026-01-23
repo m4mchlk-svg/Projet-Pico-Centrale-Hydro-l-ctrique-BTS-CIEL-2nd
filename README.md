@@ -16,6 +16,8 @@
 ## 2_Contrôle_vanne_et_moteur : Théo
 
 ## 3_Communication_Lora : Matheïs
++ LoRa emission
++ LoRa reception
 
 ## 4_Communication_GSM : Chris
 
