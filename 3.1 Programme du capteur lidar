@@ -1,0 +1,55 @@
+from machine import UART
+from machine import Timer
+import time
+
+uart = UART(1, baudrate=115200, rx=22, tx=23, timeout=10)
+dist1 = 0
+error = 0
+count = 0
+
+max_error = 2
+max_marge = 10
+timer_period_ms = 1000
+
+def get_distance():
+    if uart.any() > 0:
+        data = uart.read()
+        
+        header_idx = data.rfind(b'\x59\x59')
+        
+        if header_idx != -1 and len(data) >= header_idx + 4:
+            dist_low = data[header_idx + 2]
+            dist_high = data[header_idx + 3]
+            distance = dist_low + (dist_high << 8)
+            return distance
+    return None
+
+def get_data(timer_sensor):
+    global max_marge
+    global max_error
+    global dist1
+    global error
+    global count
+    mesure = get_distance()
+    
+    if mesure is not None:
+        if 10 < mesure < 1200:
+            if abs(mesure - dist1) <= max_marge or error >= max_error:
+                dist1 = mesure
+                error = 0
+            else:
+                error += 1
+            
+            count += 1
+            print(f"Distance n°{count}: {dist1} cm\nErreur: {error}\n")
+        else:
+            print(f"Distance n°{count}: Hors limite\n")
+            count += 1
+
+timer_sensor = Timer(1)
+start = time.ticks_ms
+timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
+
+while True:
+    pass
+
