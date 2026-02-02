@@ -13,3 +13,4 @@ while True:
     time.sleep(1)
     dir1.value(0)             # set pin to off/low
     time.sleep(1)
+
