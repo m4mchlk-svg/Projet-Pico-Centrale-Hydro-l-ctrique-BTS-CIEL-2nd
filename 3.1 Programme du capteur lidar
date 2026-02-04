@@ -3,15 +3,18 @@ from machine import Timer
 import time
 
 uart = UART(1, baudrate=115200, rx=22, tx=23, timeout=10)
-dist1, error, count = 0, 0, 0
-max_error, max_marge, timer_period_ms = 2, 10, 1000
+dist1, dist2, dist3, moyenne, error, count = 0, 0, 0, 0, 0, 0
+max_error, max_marge, timer_period_ms = 2, 5, 1000
 
 def get_distance():
+    while uart.any() > 9:
+        uart.read(uart.any()) 
+    
+    time.sleep_ms(10)
     if uart.any() > 0:
         data = uart.read()
         
         header_idx = data.rfind(b'\x59\x59')
-        
         if header_idx != -1 and len(data) >= header_idx + 4:
             dist_low = data[header_idx + 2]
             dist_high = data[header_idx + 3]
@@ -20,22 +23,25 @@ def get_distance():
     return None
 
 def get_data(timer):
-    global max_marge, max_error, dist1, error, count
+    global max_marge, max_error, dist1, dist2, dist3, moyenne, error, count
     mesure = get_distance()
     
     if mesure is not None:
         if 10 < mesure < 1200:
             if abs(mesure - dist1) <= max_marge or error >= max_error:
+                dist3 = dist2
+                dist2 = dist1
                 dist1 = mesure
+                moyenne = int((dist1 + dist2 + dist3) / 3)
                 error = 0
             else:
                 error += 1
             
             count += 1
-            print(f"Distance n°{count}: {dist1} cm\nErreur: {error}\n")
+            print(f"Distance n°{count}: {dist1} cm\nMoyenne des 3 dernières valeurs: {moyenne} cm\nErreur: {error}\n")
         else:
-            print(f"Distance n°{count}: Hors limite\n")
             count += 1
+            print(f"Distance n°{count}: --- Hors limite ---\n")
             
         if error >= max_error:
             print(f"\n--- Plus de {max_error} erreurs de suite, ajustement... ---\n\n")
@@ -46,4 +52,3 @@ timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data
 
 while True:
     pass
-
