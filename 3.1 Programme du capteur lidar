@@ -6,13 +6,6 @@ uart = UART(1, baudrate=115200, rx=22, tx=23, timeout=10)
 dist1, dist2, dist3, moyenne, error, count = 0, 0, 0, 0, 0, 0
 max_error, max_marge, timer_period_ms = 2, 10, 1000
 
-def send_command(cmd):
-    uart.write(cmd)
-
-CMD_LOW_POWER_ON = b'\x5A\x06\x35\x01\x00\x96'
-CMD_LOW_POWER_OFF = b'\x5A\x06\x35\x00\x00\x96'
-CMD_SAVE = b'\x5A\x04\x11\x6F'
-
 def get_distance():
     while uart.any() > 9:
         uart.read(uart.any()) 
@@ -56,9 +49,6 @@ def get_data(timer):
 timer_sensor = Timer(1)
 start = time.ticks_ms
 timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
-
-send_command(CMD_LOW_POWER_ON)
-send_command(CMD_SAVE)
 
 while True:
     pass
