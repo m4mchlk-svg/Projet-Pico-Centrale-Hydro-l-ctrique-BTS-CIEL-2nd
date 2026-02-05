@@ -1,19 +1,27 @@
-from machine import UART
-from machine import Timer
+from machine import UART, Timer
 import time
 
 uart = UART(1, baudrate=115200, rx=22, tx=23, timeout=10)
+
 dist1, dist2, dist3, moyenne, error, count = 0, 0, 0, 0, 0, 0
 max_error, max_marge, timer_period_ms = 2, 10, 1000
+
+def init_tfmini_low_power():
+    cmd_low_power = b'\x5A\x06\x35\x01\x00\x96'
+    uart.write(cmd_low_power)
+    time.sleep_ms(100)
+    
+    cmd_save = b'\x5A\x04\x11\x6F'
+    uart.write(cmd_save)
+    time.sleep(1)
 
 def get_distance():
     while uart.any() > 9:
         uart.read(uart.any()) 
     
-    time.sleep_ms(10)
+    time.sleep_ms(20)
     if uart.any() > 0:
         data = uart.read()
-        
         header_idx = data.rfind(b'\x59\x59')
         if header_idx != -1 and len(data) >= header_idx + 4:
             dist_low = data[header_idx + 2]
@@ -38,16 +46,17 @@ def get_data(timer):
                 error += 1
             
             count += 1
-            print(f"Distance n°{count}: {dist1} cm\nMoyenne des 3 dernières valeurs: {moyenne} cm\nErreur: {error}\n")
+            print(f"Distance n°{count}: {dist1} cm")
+            print(f"Moyenne des 3 dernières valeurs: {moyenne} cm | Erreur: {error}\n")
         else:
             count += 1
             print(f"Distance n°{count}: --- Hors limite ---\n")
             
         if error >= max_error:
-            print(f"\n--- Plus de {max_error} erreurs de suite, ajustement... ---\n\n")
-
+            print("--- Ajustement suite à erreurs répétées ---\n")
+            
+init_tfmini_low_power()
 timer_sensor = Timer(1)
-start = time.ticks_ms
 timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
 
 while True:
