@@ -30,7 +30,7 @@ def get_data(timer):
             if abs(mesure - dist1) <= max_marge or error >= max_error:
                 dist3 = dist2
                 dist2 = dist1
-                dist1 = mesure
+                dist1 = mesure /  2
                 moyenne = int((dist1 + dist2 + dist3) / 3)
                 error = 0
             else:
