@@ -14,6 +14,14 @@
 ### 1.3 Programmes :
 
 ## 2_Contrôle_vanne_et_moteur : Théo
+### module datasheet
+### Schémas
+### Test
+### programme test
+### routage 
+### création de la carte
+### programme final
+
 
 ## 3_Communication_Lora : Matheïs
 + Module Datasheet
