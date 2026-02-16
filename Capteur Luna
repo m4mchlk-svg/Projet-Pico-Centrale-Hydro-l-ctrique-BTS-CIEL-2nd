@@ -1,0 +1,63 @@
+from machine import I2C, Pin, Timer
+import time
+
+# Configuration de l'I2C (ajustez les broches SDA et SCL selon votre carte, ex: ESP32 utilise souvent 21 et 22)
+# La vitesse d'horloge supportée par le TF-Luna va jusqu'à 400 000 Hz [cite: 187]
+i2c = I2C(0, scl=Pin(22), sda=Pin(21), freq=400000)
+
+TF_LUNA_ADDR = 0x10 # Adresse I2C par défaut du TF-Luna 
+
+dist1, dist2, dist3, moyenne, error, count = 0, 0, 0, 0, 0, 0
+max_error, max_marge, timer_period_ms = 2, 10, 1000
+
+def get_distance():
+    try:
+        # On lit 4 octets à partir du registre 0x00 
+        # 0x00 : DIST_LOW, 0x01 : DIST_HIGH, 0x02 : AMP_LOW, 0x03 : AMP_HIGH 
+        data = i2c.readfrom_mem(TF_LUNA_ADDR, 0x00, 4)
+        
+        # Reconstruction des valeurs (Little Endian)
+        distance = data[0] + (data[1] << 8)
+        amp = data[2] + (data[3] << 8)
+        
+        # Exclusion des données non fiables (Amp < 100 ou Amp == 65535) [cite: 234]
+        if amp < 100 or amp == 65535:
+            return None
+            
+        return distance
+        
+    except OSError as e:
+        print("Erreur de communication I2C. Vérifiez le câblage et la broche 5.")
+        return None
+
+def get_data(timer):
+    global max_marge, max_error, dist1, dist2, dist3, moyenne, error, count
+    mesure = get_distance()
+    
+    if mesure is not None:
+        # Plage de fonctionnement fiable du TF-Luna : 20 cm à 800 cm [cite: 113, 276]
+        if 20 <= mesure <= 800:
+            if abs(mesure - dist1) <= max_marge or error >= max_error:
+                dist3 = dist2
+                dist2 = dist1
+                dist1 = mesure
+                moyenne = int((dist1 + dist2 + dist3) / 3)
+                error = 0
+            else:
+                error += 1
+            
+            count += 1
+            print(f"Distance n°{count}: {dist1} cm")
+            print(f"Moyenne des 3 dernières valeurs: {moyenne} cm | Erreur: {error}\n")
+        else:
+            count += 1
+            print(f"Distance n°{count}: --- Hors limite ({mesure} cm) ---\n")
+            
+        if error >= max_error:
+            print("--- Ajustement suite à erreurs répétées ---\n")
+
+timer_sensor = Timer(1)
+timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
+
+while True:
+    pass
