@@ -25,8 +25,11 @@
 
 ## 3_Communication_Lora : Matheïs
 + Module Datasheet
-+ LoRa emission
-+ LoRa reception
++ LoRa emission wipi
++ LoRa reception wipi
++ code v1.1-2-3
++ def utlie
++ rdme def
 
 ## 4_Communication_GSM : Chris
 
