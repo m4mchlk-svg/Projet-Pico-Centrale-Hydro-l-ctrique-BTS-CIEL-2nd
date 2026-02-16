@@ -1,43 +1,47 @@
 from machine import UART
 import time
 
-# UART haute performance
-uart = UART(1, baudrate=115200, rx=22, tx=23, timeout=5)
+# Configuration UART
+uart = UART(1, baudrate=115200, rx=22, tx=23, timeout=10)
 
 # --- CONFIGURATION ---
-OFFSET = 8  # On retire les 8cm de décalage que tu observes
-MIN_STRENGTH = 100 # On ignore si le signal est trop faible
+OFFSET = 8         # Correction de ton décalage de 8cm
+MIN_STRENGTH = 100  # Seuil de fiabilité du signal
 
-def read_fast():
-    print("FLUX MAXIMUM ACTIVÉ...")
+def read_once_per_second():
+    print("LECTURE : 1 MESURE PAR SECONDE...")
+    
     while True:
-        # On ne traite que si on a au moins une trame
+        # 1. On attend 1 seconde
+        time.sleep(1)
+        
+        # 2. On vérifie s'il y a des données
         if uart.any() >= 9:
-            # On lit tout le buffer pour ne pas accumuler de retard
+            # IMPORTANT : On lit TOUT le tampon pour vider les vieilles mesures
             data = uart.read()
             
-            # On cherche TOUTES les trames dans le paquet lu
-            idx = 0
-            while True:
-                idx = data.find(b'\x59\x59', idx)
-                if idx == -1 or (idx + 8) >= len(data):
-                    break
-                
-                # Extraction
+            # 3. On cherche la DERNIÈRE trame (la plus récente) avec rfind
+            idx = data.rfind(b'\x59\x59')
+            
+            if idx != -1 and (idx + 8) < len(data):
+                # Extraction des données de la trame fraîche
                 d_raw = data[idx+2] + (data[idx+3] << 8)
                 strength = data[idx+4] + (data[idx+5] << 8)
                 checksum = data[idx+8]
                 
-                # Validation ultra-rapide
+                # 4. Validation du Checksum
                 if (sum(data[idx:idx+8]) & 0xFF) == checksum:
                     if strength >= MIN_STRENGTH:
-                        # APPLICATION DE LA CORRECTION
                         d_correct = d_raw - OFFSET
                         print(f"Dist: {d_correct}cm (Brut: {d_raw} | Sig: {strength})")
-                
-                idx += 9 # On passe à la trame suivante dans le buffer
+                    else:
+                        print("Signal trop faible")
+                else:
+                    print("Erreur Checksum")
 
-# Nettoyage et lancement
+# Nettoyage initial du tampon
 if uart.any():
     uart.read()
-read_fast()
+
+# Lancement
+read_once_per_second()
