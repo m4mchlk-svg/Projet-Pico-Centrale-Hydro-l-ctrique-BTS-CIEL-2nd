@@ -80,13 +80,13 @@ Elle sert a configurer le composant en lui donnant une adresse et un canal pour 
 | 5| OPTN| fixed or broadcast tsm. ,IO drive and tsm.power|
 >Exemple de la configuration utilisé - address : 1 - canal : 23
 
-| Type | B0 | B1 | B2 | B3 | B4 | B5 |
+| Byte | B0 | B1 | B2 | B3 | B4 | B5 |
 | --- | --- | --- | --- | --- | --- | --- |
 | Hex | 0xC0 | 0x00 | 0x01 | 0x1A | 0x17 | 0xC4 |
 
 ## Fonction Transmission :
 
-### Envoie de string(variable)
+### Envoie de variable au format texte
 ```
 def send_point_to_point_v(target_h, target_l, target_chan, message):
     wait_aux()
@@ -109,7 +109,7 @@ def send_point_to_point_txt(target_h, target_l, target_chan, message):
 >Cette definition sert a mettre en place l'envoie d'un texte a un module specifique
 >>La variable `message` prend le string mis en parametre
 
-### Envoie de texte
+### Envoie de texte a tout un canal
 ```
 def send_broadcast(target_chan, message):
     wait_aux()
