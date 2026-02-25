@@ -1,3 +1,4 @@
++  Doc_perso_MICHALAK_... : Rapport de projet Vx.y ,Update frequente ou ajout de pdf supplementaire
 +  Datasheet Module
 +  Code LoRa Emission : sur wipi
 +  Code LoRa Reception : sur wipi
