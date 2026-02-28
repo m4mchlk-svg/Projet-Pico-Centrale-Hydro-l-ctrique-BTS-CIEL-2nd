@@ -134,7 +134,7 @@ def send_broadcast(target_chan, message):
 
 ## Fonction Reception : 
 
-### Affichage de la reception 
+### Reception txt + Affichage  
 ```
 def receive_monitoring():
     """ MODE 3 : Ecouter les messages entrants """
@@ -144,6 +144,25 @@ def receive_monitoring():
             print(f"Message reçu : {data.decode('utf-8')}")
         except:
             print(f"Message reçu (HEX) : {data.hex()}")
+        return data
+    return None
+```
+>Cette definition sert a mettre en place l'affichage console du message envoyer par le module transmetteur
+
+### Reception txt + trad var + Affichage 
+```
+def receive_v():
+    if uart.any():
+        global data 
+        data = uart.read()
+        int_data = int(data)
+        try:
+            if debug: 
+                print(f"Message reçu : {int_data.decode('utf-8')}")
+                print(int_data)
+        except:
+            if debug: 
+                print(f"Message reçu (HEX) : {int_data.hex()}")
         return data
     return None
 ```
