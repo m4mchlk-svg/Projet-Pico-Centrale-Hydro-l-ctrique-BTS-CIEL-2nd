@@ -4,7 +4,7 @@ import time
 uart = UART(1, baudrate=9600, rx=22, tx=23, timeout=10)
 
 dist1, dist2, dist3, moyenne, error, count = 0, 0, 0, 0, 0, 0
-max_error, max_marge, timer_period_ms = 2, 100, 1000
+max_error, max_marge, timer_period_ms = 2, 50, 1000
 
 def get_distance():
     if uart.any() >= 4:
@@ -42,10 +42,10 @@ def get_data(timer):
             print(f"Moyenne (3 val): {moyenne/10:.1f} cm | Erreur: {error}\n")
         else:
             count += 1
-            print(f"Distance n°{count}: --- Hors limite (Blind zone: 28cm) ---\n")
+            print(f"Distance n°{count}: --- Hors limite ---\n")
             
         if error >= max_error:
-            print("--- Ajustement suite à erreurs répétées ---\n")
+            print(f"--- Ajustement suite à {max_error + 1} erreurs ---\n")
 
 timer_sensor = Timer(1)
 timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
