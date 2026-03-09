@@ -12,6 +12,10 @@ m0 = Pin(19, Pin.OUT)
 m1 = Pin(18, Pin.OUT)
 aux = Pin(22, Pin.IN)
 ```
+| Pin ESP | RX-16 | TX-17 | 18 | 19 | 22 |
+| --- | --- | --- | --- | --- | --- |
+| Pin Mod | TX | RX | m1 | m0 | AUX | 
+
 
 ## Fonction Configuration :
 
