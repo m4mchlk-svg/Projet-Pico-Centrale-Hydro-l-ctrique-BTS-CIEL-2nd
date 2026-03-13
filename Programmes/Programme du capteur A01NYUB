@@ -18,12 +18,13 @@ def get_distance():
             checksum = data[header_idx + 3]
             
             if ((0xFF + d_high + d_low) & 0xFF) == checksum:
-                distance_mm = (d_high << 8) + d_low
-                return distance_mm
+                distance_cm = (d_high << 8) + d_low
+                return distance_cm
     return None
 
 def get_data(timer):
     global max_marge, max_error, dist1, dist2, dist3, moyenne, error, count
+    c, d, u = 0, 0, 0
     mesure = get_distance()
     
     if mesure is not None:
@@ -39,8 +40,13 @@ def get_data(timer):
             
             count += 1
             
+            c = (round(dist1 / 10) // 100) % 10
+            d = (round(dist1 / 10) // 10) % 10
+            u = round(dist1 / 10) % 10
+            
             print(f"Distance n°{count}: {round(dist1/10)} cm")
-            print(f"Moyenne (3 valeurs): {round(moyenne/10)} cm | Erreur: {error}\n")
+            print(f"Moyenne (3 valeurs): {round(moyenne/10)} cm | Erreur: {error}")
+            print(f"Octets: [{c:08b}, {d:08b}, {u:08b}]\n")
         else:
             count += 1
             print(f"Distance n°{count}: --- Hors limite ---\n")
