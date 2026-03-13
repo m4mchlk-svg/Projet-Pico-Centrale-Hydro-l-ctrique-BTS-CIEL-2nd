@@ -46,13 +46,15 @@ def get_data(timer):
             
             print(f"Distance n°{count}: {round(dist1/10)} cm")
             print(f"Moyenne (3 valeurs): {round(moyenne/10)} cm | Erreur: {error}")
-            print(f"Octets: [{c:08b}, {d:08b}, {u:08b}]\n")
+            print(f"Octets: [{c:08b} {d:08b} {u:08b}]\n\n")
         else:
             count += 1
-            print(f"Distance n°{count}: --- Hors limite ---\n")
+            c, d, u = 0, 0, 0
+            print(f"Distance n°{count}: --- Hors limite ---")
+            print(f"Octets: [{c:08b} {d:08b} {u:08b}]\n\n")
             
         if error >= max_error:
-            print(f"--- Ajustement suite à {max_error + 1} erreurs ---\n")
+            print(f"--- Ajustement suite à {max_error + 1} erreurs ---\n\n")
 
 timer_sensor = Timer(0)
 timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
