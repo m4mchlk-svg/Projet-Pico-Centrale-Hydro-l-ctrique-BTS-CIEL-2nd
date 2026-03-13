@@ -38,8 +38,9 @@ def get_data(timer):
                 error += 1
             
             count += 1
-            print(f"Distance n°{count}: {dist1/10:.1f} cm")
-            print(f"Moyenne (3 valeurs): {moyenne/10:.1f} cm | Erreur: {error}\n")
+            
+            print(f"Distance n°{count}: {round(dist1/10)} cm")
+            print(f"Moyenne (3 valeurs): {round(moyenne/10)} cm | Erreur: {error}\n")
         else:
             count += 1
             print(f"Distance n°{count}: --- Hors limite ---\n")
