@@ -13,7 +13,7 @@ time.sleep(0.1) # Temps de stabilisation
 # Initialisation de l'UART2 sur l'ESP32
 # Vitesse par défaut du module : 9600 bps [cite: 81]
 uart = UART(2, baudrate=9600, tx=17, rx=16)
-
+----------------------------------------------------
 def configure_fixed_transmission():
     # Commande de configuration (6 octets)
     # C0 : Enregistrement permanent [cite: 81]
@@ -44,7 +44,7 @@ configure_fixed_transmission()
 M0.value(0)
 M1.value(0)
 print("Mode Normal activé. Prêt à émettre/recevoir.")
-
+------------------------------------------------------------------------
 def send_fixed_message(addh, addl, chan, text):
     # Format : [ADDH] [ADDL] [CHAN] + Données [cite: 40]
     header = bytes([addh, addl, chan])
@@ -53,7 +53,7 @@ def send_fixed_message(addh, addl, chan, text):
 
 # Exemple d'utilisation vers le module 0x0005 sur le canal 0x04
 send_fixed_message(0x00, 0x05, 0x04, "Hello World")
-
+--------------------------------------------------------------------
 def set_mode(mode):
     """
     Change le mode du module LoRa (0 à 3)
@@ -79,7 +79,7 @@ def set_mode(mode):
 set_mode(3) # Passage en mode config
 # ... envoyer vos commandes de config ...
 set_mode(0) # Retour en mode normal pour communiquer
-
+-------------------------------------------------------------------------------
 def safe_set_mode(mode_target):
     # Attendre que le module ne soit plus occupé (AUX doit être à 1) [cite: 60, 63]
     while aux.value() == 0:
@@ -93,3 +93,24 @@ def safe_set_mode(mode_target):
     time.sleep_ms(5)
     
     print(f"Mode {mode_target} actif.")
+------------------------------------------------------------------------------
+def crc16(texte):  # Contrôle de redondance cyclique : détecter erreurs de transmission
+    crc = 0xFFFF
+    for char in texte:
+        crc ^= ord(char)
+        for _ in range(8):
+            if crc & 1:
+                crc = (crc >> 1) ^ 0xA001
+            else:
+                crc >>= 1
+    return f"{crc:04X}"
+
+def crc_valide(texte): # calcul le crc16 de la trame reçue et le compare à celui transmis
+    crc_recu = texte[-4:]
+    #print("crc16 reçu = ",crc_recu)
+    crc_calc = crc16(str(texte[0:-4]))
+    print("  --> crc16 calculé = ",crc_calc, end='')
+    if crc_recu == crc_calc : # si les deux sont identiques : pas d'erreur de transmission
+        print(" * trame valide !") # et on valide la trame reçue !
+        return True
+    return False
