@@ -41,12 +41,12 @@ def get_data(timer):
             
             print(f"Distance n°{count}: {round(dist1/10)} cm")
             print(f"Moyenne (3 valeurs): {round(moyenne/10)} cm | Erreur: {error}")
-            print(f"Octets: [{mesure:016b}]\n\n")
+            print(f"Octets: [{round(dist1/10):016b}]\n\n")
         else:
             count += 1
             c, d, u = 0, 0, 0
             print(f"Distance n°{count}: --- Hors limite ---")
-            print(f"Octets: [{mesure:016b}]\n\n")
+            print(f"Octets: [{round(dist1/10):016b}]\n\n")
             
         if error >= max_error:
             print(f"--- Ajustement suite à {max_error + 1} erreurs ---\n\n")
