@@ -8,7 +8,7 @@ uart.init(57600, bits=8, parity=None, stop=1)
 
 # --- VOS PARAMÈTRES THINGSPEAK ---
 CHANNEL_ID = "3297574"
-READ_API_KEY = "4JTRK09UH8OOZZK8" # À remplacer par votre Read API Key
+READ_API_KEY = "4JTRK09UH8OOZZK8"
 FIELD_NUMBER = 1
 
 # --- FONCTIONS DE COMMUNICATION ---
@@ -68,7 +68,7 @@ def get_last_value_json():
     """Récupère la dernière valeur du champ via l'API JSON."""
     host = "api.thingspeak.com"
     # Utilisation du format .json pour répondre à votre demande
-    path = f'/channels/{CHANNEL_ID}/fields/{FIELD_NUMBER}/last.json?api_key={READ_API_KEY}'
+    path = f'/channels/{CHANNEL_ID}/fields/{FIELD_NUMBER}.json?api_key={READ_API_KEY}&results=2'
     
     # Reset HTTP
     send_at('AT+SHDISC', 0.5)
@@ -96,12 +96,13 @@ def get_last_value_json():
         try:
             # On découpe après la clé et on prend ce qu'il y a avant le guillemet fermant
             valeur = raw_data.split(search_key)[1].split('"')[0]
+            print(valeur)
             return valeur
         except:
             return "Erreur de découpage"
     else:
         return "Champ vide ou introuvable"
-
+    
 # --- BOUCLE PRINCIPALE ---
 
 print("=== PROGRAMME DE LECTURE SEULE THINGSPEAK ===")
@@ -112,13 +113,14 @@ if setup_connection():
             val = get_last_value_json()
             if val:
                 print(f"\n[RÉSULTAT] Dernière valeur enregistrée : {val}")
-            
+
             print("-" * 30)
-            print("Prochaine lecture dans 15 secondes...")
-            time.sleep(15)
+            print("Prochaine lecture dans 30 secondes...")
+            time.sleep(30)
             
         except KeyboardInterrupt:
             print("\nArrêt du programme.")
             break
 else:
     print("Initialisation échouée. Vérifiez votre antenne ou votre couverture réseau.")
+
