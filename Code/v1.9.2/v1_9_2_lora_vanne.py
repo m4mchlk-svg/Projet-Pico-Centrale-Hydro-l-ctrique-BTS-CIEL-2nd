@@ -17,7 +17,7 @@ ad_va_chanel = 23
 
 
 print("in config")
-lora.setup_config(ad_mo_h, ad_mo_l, ad_mo_chanel)
+lora.setup_config(ad_va_h, ad_va_l, ad_va_chanel)
 print("out config")
 compteur_trame =0
 compteur_trame_valide= 0
@@ -49,7 +49,7 @@ while True:
         #print(f"flag recv: {flag_recv}")
     
     if flag_send:
-        lora.send_trame(ad_va_h, ad_va_l, ad_va_chanel)
+        lora.send_trame(ad_mo_h, ad_mo_l, ad_mo_chanel)
         #print(f"flag send : {flag_send}")
         flag_send = False
         lora.wait_aux()
