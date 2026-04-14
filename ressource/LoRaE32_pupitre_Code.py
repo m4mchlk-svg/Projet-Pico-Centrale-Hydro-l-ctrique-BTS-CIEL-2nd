@@ -20,6 +20,13 @@ from machine import UART, Pin, Timer
 from LoRaE32_Pupitre_Lib import *   # Fichier à télécharger dans l’ESP32 :  class LoRaE32 
 import time, random
 
+class Color:
+    R = '\033[31m'  # Rouge
+    G = '\033[32m'  # Vert
+    B = '\033[34m'  # Bleu
+    Y = '\033[33m'  # Jaune
+    END = '\033[0m' # Reset
+
 # Cablage de l'ESP32 sur le module Lora
 UART2 = 2  # deuxième port UART de l'ESP32
 RX    = 16
@@ -128,12 +135,15 @@ def envoyer_trame():
 def lecture_trame():
     msg = lora_pupitre.get_data() # Lecture du recepteur LoRa 
     if msg:
-        trame_reception = msg.decode('utf-8').strip()
-        print(f"\n*** Message brut reçu : {trame_reception}") # affichage trame brute
-        if trame_reception.startswith('$') and crc_valide(trame_reception):
-            resultat = parse_message(trame_reception)     # trame valide à analyser
-            return resultat
-        return "erreur"
+        try :
+            trame_reception = msg.decode('utf-8').strip()
+            print(f"\n*** Message brut reçu : {trame_reception}") # affichage trame brute
+            if trame_reception.startswith('$') and crc_valide(trame_reception):
+                resultat = parse_message(trame_reception)     # trame valide à analyser
+                return resultat
+            return "erreur"
+        except:
+            return None 
     return None
 
 # ****************   PROGRAMME PRINCIPAL *******************************
@@ -164,6 +174,7 @@ compteur_trames_emises = 0
 while True:
     # *** emission ***
     if emission_flag :  # traitement emission de données sous interruption.
+        print(Color.Y)
         envoyer_trame()
         compteur_trames_emises += 1   # On compte les trames envoyées
         print(f"Nombre de trames envoyées par le module pupitre : {compteur_trames_emises}")
@@ -171,6 +182,7 @@ while True:
         
     # *** reception ***
     if reception_flag :  # traitement reception de données sous interruption.
+        print(Color.G)
         trame = lecture_trame()
         if isinstance(trame, dict):
             for key in ['val1', 'val2', 'texte1', 'crc16']:
