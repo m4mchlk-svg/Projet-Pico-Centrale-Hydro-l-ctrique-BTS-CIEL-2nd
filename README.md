@@ -9,9 +9,8 @@
 + Diagramme de Gantt
 
 ## 1_Gestion_niveau_d_eau : Jessy
-### 1.1 Materiels :
-### 1.2 Schémas :
-### 1.3 Programmes :
+### 1.1 Materiels
+### 1.2 Programmes
 
 ## 2_Contrôle_vanne_et_moteur : Théo
 ### 1.1 module datasheet
