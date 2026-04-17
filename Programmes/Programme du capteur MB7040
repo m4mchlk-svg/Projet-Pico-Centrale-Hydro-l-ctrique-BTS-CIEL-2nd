@@ -42,6 +42,9 @@ def get_data(timer):
                 dist1 = mesure
                 dist2 = mesure
                 timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
+                
+            else:
+                timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
             
     else:
         count += 1
