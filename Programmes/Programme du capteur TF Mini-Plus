@@ -1,43 +1,63 @@
 from machine import I2C, Pin, Timer
 import time
 
-# Configuration I2C (Adapter les pins selon votre carte, ex: ESP32)
-# SDA: Pin 22, SCL: Pin 23, Fréquence standard 400kHz
+# Configuration I2C
 i2c = I2C(0, sda=Pin(22), scl=Pin(23), freq=400000)
 
-# Adresse I2C par défaut du TFmini Plus 
-TFMINI_ADDR = 0x10
+def get_firmware_version(addr):
+    """Récupère la version du firmware du capteur"""
+    try:
+        i2c.writeto(addr, b'\x5a\x04\x01\x5f')
+        time.sleep_ms(100)
+        res = i2c.readfrom(addr, 7)
+        if len(res) >= 7 and res[0] == 0x5a and res[2] == 0x01:
+            return "V{}.{}.{}".format(res[3], res[4], res[5])
+    except:
+        pass
+    return "Inconnue"
 
-dist1, dist2, dist3, moyenne, error, count = 0, 0, 0, 0, 0, 0
+# --- SCAN ET DÉTECTION ---
+print("Recherche de capteurs I2C...")
+devices = i2c.scan()
+sensor_info = {}
+
+if devices:
+    for d in devices:
+        version = get_firmware_version(d)
+        sensor_info[d] = version
+        print("Trouvé : Adresse {} | Version : {}".format(hex(d), version))
+    TFMINI_ADDR = devices[0]
+else:
+    print("Aucun capteur détecté. Utilisation adresse par défaut 0x10")
+    TFMINI_ADDR = 0x10
+
+# Initialisation des variables
+dist1, dist2, dist3 = 0, 0, 0
+moyenne, error, count = 0, 0, 0
 max_error, max_marge, timer_period_ms = 2, 10, 1000
 
 def get_distance():
     try:
-        # En I2C, on demande explicitement la trame de données au capteur [cite: 77, 120]
-        # Commande pour obtenir les données (9 octets) : 5A 05 00 01 60 
+        # Commande pour obtenir les données
         i2c.writeto(TFMINI_ADDR, b'\x5a\x05\x00\x01\x60')
-        
-        # Lecture de la réponse de 9 octets 
         data = i2c.readfrom(TFMINI_ADDR, 9)
         
         if len(data) >= 9 and data[0] == 0x59 and data[1] == 0x59:
-            # Extraction de la distance (Octets 2 et 3) [cite: 67]
-            dist_low = data[2]
-            dist_high = data[3]
-            distance = dist_low + (dist_high << 8)
+            distance = data[2] + (data[3] << 8)
             return distance
-    except Exception as e:
-        print(f"Erreur de lecture I2C: {e}")
+    except:
+        return None
     return None
 
-def get_data(timer):
-    global max_marge, max_error, dist1, dist2, dist3, moyenne, error, count
+def get_data(t):
+    global dist1, dist2, dist3, moyenne, error, count
     mesure = get_distance()
     
     if mesure is not None:
-        # Le capteur renvoie 0 si le signal est trop faible ou hors de portée [cite: 72]
         if 10 < mesure < 1200:
+            # Vérification de la cohérence de la mesure
             if abs(mesure - dist1) <= max_marge or error >= max_error:
+                # Décalage des anciennes valeurs (corrigé pour plus de clarté)
                 dist3 = dist2
                 dist2 = dist1
                 dist1 = mesure
@@ -47,18 +67,17 @@ def get_data(timer):
                 error += 1
             
             count += 1
-            print(f"Distance n°{count}: {dist1} cm")
-            print(f"Moyenne des 3 dernières: {moyenne} cm | Erreur: {error}\n")
+            addr_h = hex(TFMINI_ADDR)
+            ver = sensor_info.get(TFMINI_ADDR, "N/A")
+            print("[{} - {}] Dist n#{}: {} cm | Moy: {} cm".format(addr_h, ver, count, dist1, moyenne))
         else:
-            count += 1
-            print(f"Distance n°{count}: --- Hors limite ---\n")
-            
-        if error >= max_error:
-            print("--- Ajustement suite à erreurs répétées ---\n")
+            print("[{}] Hors limite ({} cm)".format(hex(TFMINI_ADDR), mesure))
 
-# Initialisation du timer pour la mesure périodique
+# Lancement du timer
 timer_sensor = Timer(1)
 timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
+
+print("Système prêt. Mesures en cours...")
 
 while True:
     time.sleep(1)
