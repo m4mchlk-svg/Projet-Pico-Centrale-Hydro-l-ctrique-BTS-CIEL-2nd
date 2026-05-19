@@ -124,7 +124,7 @@ def get_data(timer):
             count += 1
             print("[Adresse: {}]\nHors limite ({} cm)\n\n".format(hex(TFMINI_ADDR), mesure))
 
-timer_sensor = Timer(1)
+timer_sensor = Timer(0)
 timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
 
 while True:
