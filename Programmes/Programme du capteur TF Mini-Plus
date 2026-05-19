@@ -49,7 +49,7 @@ dist1, dist2 = 0, 0 							# Stockage des 3 dernières mesures pour calculer la 
 error, count = 0, 0 							# Valeurs de la moyenne, des erreurs, et du compteur
 max_error = 2   								# Nombre d'erreurs tolérées
 max_marge = 10  								# Variation maximale autorisée (en cm) entre deux mesures
-timer_period_ms, error_period_ms = 1000, 250	# Fréquence de mesure
+timer_period_ms, error_period_ms = 3000, 1000	# Fréquence de mesure
 
 def get_distance():
     try:
@@ -89,27 +89,36 @@ def get_data(t):
                 
                 # Réinitialise le compteur d'erreurs car valeur valide
                 error = 0
+                
+                # Incrémente le compteur global
+                count += 1
+                
+                # Formatage pour l'affichage
+                addr_h = hex(TFMINI_ADDR)
+                ver = sensor_info.get(TFMINI_ADDR, "N/A")
+                
+                # Affiche les résultats
+                print("[{} - {}] Distance n°{}: {} cm\n".format(addr_h, ver, count, dist2))
             else:
-                # Variance trop élevée = ignorée + erreur
+                # Variance trop élevée = ignorée + erreur + temps de mesure raccourci
                 error += 1
+                print(f"{error} erreur(s)\n")
+                timer_sensor.init(mode=Timer.PERIODIC, period=error_period_ms, callback=get_data)
             
-            # Incrémente le compteur global
-            count += 1
-            
-            # Formatage pour l'affichage
-            addr_h = hex(TFMINI_ADDR)
-            ver = sensor_info.get(TFMINI_ADDR, "N/A")
-            
-            # Affiche les résultats
-            print("[{} - {}] Distance n°{}: {} cm".format(addr_h, ver, count, dist2))
+            if error > max_error:
+                print("Erreurs multiples, recalibrage...\n")
+                error = 0
+                dist1 = mesure
+                dist2 = mesure
+                timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
+                
         else:
             # Donnée lue mais en dehors des limites du capteur
-            print("[{}] Hors limite ({} cm)".format(hex(TFMINI_ADDR), mesure))
+            print("[{}] Hors limite ({} cm)\n".format(hex(TFMINI_ADDR), mesure))
+            count += 1
 
 timer_sensor = Timer(1)
 timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
-
-print("Démarrage...")
 
 while True:
     pass
