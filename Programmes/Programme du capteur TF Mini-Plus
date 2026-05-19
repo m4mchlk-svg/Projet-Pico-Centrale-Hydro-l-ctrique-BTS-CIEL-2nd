@@ -30,7 +30,7 @@ def get_firmware_version(addr):
 print("Recherche de capteurs I2C...")
 # Scan bus I2C adresses matérielles connectées
 devices = i2c.scan()
-sensor_info = {} # Dictionnaire stock adresse et version capteur(s)
+sensor_info = {} 								# Dictionnaire stock adresse et version capteur(s)
 
 if devices:
     for d in devices:
@@ -45,11 +45,11 @@ else:
     print("Aucun capteur détecté. Utilisation adresse par défaut 0x10")
     TFMINI_ADDR = 0x10
 
-dist1, dist2, dist3 = 0, 0, 0     # Stockage des 3 dernières mesures pour calculer la moyenne
-moyenne, error, count = 0, 0, 0   # Valeurs de la moyenne, des erreurs, et du compteur
-max_error = 2                     # Nombre d'erreurs tolérées
-max_marge = 10                    # Variation maximale autorisée (en cm) entre deux mesures
-timer_period_ms = 1000            # Fréquence de mesure
+dist1, dist2 = 0, 0 							# Stockage des 3 dernières mesures pour calculer la moyenne
+error, count = 0, 0 							# Valeurs de la moyenne, des erreurs, et du compteur
+max_error = 2   								# Nombre d'erreurs tolérées
+max_marge = 10  								# Variation maximale autorisée (en cm) entre deux mesures
+timer_period_ms, error_period_ms = 1000, 250	# Fréquence de mesure
 
 def get_distance():
     try:
@@ -80,16 +80,12 @@ def get_data(t):
         # Vérification mesure physiquement possible
         if 10 < mesure < 1200:
             
-            # Accepte la valeur si écart avec mesure précédente correct ou erreurs maximales atteintes
-            if abs(mesure - dist1) <= max_marge or error >= max_error:
+            # Accepte la valeur si écart avec mesure précédente correct et erreurs maximales non atteintes
+            if abs(dist1 - dist2) <= max_marge and error <= max_error:
                 
                 # Décalage des valeurs
-                dist3 = dist2
                 dist2 = dist1
                 dist1 = mesure
-                
-                # Calcul moyenne sur 3 dernières valeurs
-                moyenne = int((dist1 + dist2 + dist3) / 3)
                 
                 # Réinitialise le compteur d'erreurs car valeur valide
                 error = 0
@@ -105,7 +101,7 @@ def get_data(t):
             ver = sensor_info.get(TFMINI_ADDR, "N/A")
             
             # Affiche les résultats
-            print("[{} - {}] Dist n#{}: {} cm | Moy: {} cm".format(addr_h, ver, count, dist1, moyenne))
+            print("[{} - {}] Distance n°{}: {} cm".format(addr_h, ver, count, dist2))
         else:
             # Donnée lue mais en dehors des limites du capteur
             print("[{}] Hors limite ({} cm)".format(hex(TFMINI_ADDR), mesure))
