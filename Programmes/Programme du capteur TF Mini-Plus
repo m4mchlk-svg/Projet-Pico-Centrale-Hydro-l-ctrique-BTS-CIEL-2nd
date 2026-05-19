@@ -106,6 +106,7 @@ def get_data(t):
                 timer_sensor.init(mode=Timer.PERIODIC, period=error_period_ms, callback=get_data)
             
             if error > max_error:
+                # Erreurs maximales atteintes = réinitialisation des variables + reprise du cycle normal
                 print("Erreurs multiples, recalibrage...\n")
                 error = 0
                 dist1 = mesure
