@@ -49,7 +49,7 @@ dist1, dist2 = 0, 0 							# Stockage des 3 dernières mesures pour calculer la 
 error, count = 0, 0 							# Valeurs de la moyenne, des erreurs, et du compteur
 max_error = 2   								# Nombre d'erreurs tolérées
 max_marge = 10  								# Variation maximale autorisée (en cm) entre deux mesures
-timer_period_ms, error_period_ms = 3000, 1000	# Fréquence de mesure
+timer_period_ms, error_period_ms = 3000, 1000	# Fréquence de mesure normale / erreur détectée
 
 def get_distance():
     try:
@@ -73,15 +73,17 @@ def get_distance():
 
 def get_data(t):
     global dist1, dist2, dist3, moyenne, error, count
-    
     mesure = get_distance()
-    
+        
     if mesure is not None:
+        if dist1 == 0:
+            dist1 = mesure
+            dist2 = mesure
         # Vérification mesure physiquement possible
         if 10 < mesure < 1200:
             
             # Accepte la valeur si écart avec mesure précédente correct et erreurs maximales non atteintes
-            if abs(dist1 - dist2) <= max_marge and error <= max_error:
+            if abs(mesure - dist1) <= max_marge and error <= max_error:
                 
                 # Décalage des valeurs
                 dist2 = dist1
@@ -99,24 +101,28 @@ def get_data(t):
                 
                 # Affiche les résultats
                 print("[Adresse: {} | Version: {}]\nDistance n°{}: {} cm\n\n".format(addr_h, ver, count, dist2))
+                
+                # Après réinitialisation erreurs: retour au cycle normal
+                if error == 0:
+                    timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
             else:
                 # Variance trop élevée = ignorée + erreur + temps de mesure raccourci
+                timer_sensor.init(mode=Timer.PERIODIC, period=error_period_ms, callback=get_data)
                 error += 1
                 print(f"{error} erreur(s)\n")
-                timer_sensor.init(mode=Timer.PERIODIC, period=error_period_ms, callback=get_data)
             
-            if error > max_error:
-                # Erreurs maximales atteintes = réinitialisation des variables + reprise du cycle normal
-                print("Erreurs multiples, recalibrage...\n\n")
-                error = 0
-                dist1 = mesure
-                dist2 = mesure
-                timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
+                if error > max_error:
+                    # Erreurs maximales atteintes = réinitialisation des variables + reprise du cycle normal
+                    print("Erreurs multiples, recalibrage...\n\n")
+                    error = 0
+                    dist1 = mesure
+                    dist2 = mesure
+                    timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
                 
         else:
             # Donnée lue mais en dehors des limites du capteur
-            print("[Adresse: {}]\nHors limite ({} cm)\n\n".format(hex(TFMINI_ADDR), mesure))
             count += 1
+            print("[Adresse: {}]\nHors limite ({} cm)\n\n".format(hex(TFMINI_ADDR), mesure))
 
 timer_sensor = Timer(1)
 timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
