@@ -64,6 +64,7 @@ def get_distance():
             # Distance codée sur 2 octets
             # Octet 2 (poids faible) + octet 3 (poids fort) décalé de 8 bits vers la gauche
             distance = data[2] + (data[3] << 8)
+            distance = round(distance * 1.05)
             return distance
     except:
         return None
@@ -89,6 +90,11 @@ def get_data(timer):
                 dist2 = dist1
                 dist1 = mesure
                 
+                # Conversion en 2 octets
+                lsb = dist2 & 0xFF
+                msb = (dist2 >> 8) & 0xFF
+                octets_distance = bytes([lsb, msb])
+                
                 # Réinitialise le compteur d'erreurs car valeur valide
                 error = 0
                 
@@ -100,7 +106,7 @@ def get_data(timer):
                 ver = sensor_info.get(TFMINI_ADDR, "N/A")
                 
                 # Affiche les résultats
-                print("[Adresse: {} | Version: {}]\nDistance n°{}: {} cm\n\n".format(addr_h, ver, count, dist2))
+                print("[Adresse: {} | Version: {}]\nDistance n°{}: {} cm\nFormat bytes: {}\n\n".format(addr_h, ver, count, dist2, octets_distance))
                 
                 # Après réinitialisation erreurs: retour au cycle normal
                 if error == 0:
