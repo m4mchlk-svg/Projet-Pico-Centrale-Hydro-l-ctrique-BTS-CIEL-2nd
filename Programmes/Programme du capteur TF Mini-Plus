@@ -45,8 +45,8 @@ else:
     print("Aucun capteur détecté. Utilisation adresse par défaut 0x10")
     TFMINI_ADDR = 0x10
 
-dist1, dist2 = 0, 0 							# Stockage des 3 dernières mesures pour calculer la moyenne
-error, count = 0, 0 							# Valeurs de la moyenne, des erreurs, et du compteur
+dist1, dist2 = 0, 0 							# Stockage des 2 dernières valeurs
+error, count = 0, 0 							# Valeurs des erreurs et du compteur
 max_error = 2   								# Nombre d'erreurs tolérées
 max_marge = 10  								# Variation maximale autorisée (en cm) entre deux mesures
 timer_period_ms, error_period_ms = 3000, 1000	# Fréquence de mesure normale / erreur détectée
@@ -72,7 +72,7 @@ def get_distance():
 
 
 def get_data(timer):
-    global dist1, dist2, dist3, moyenne, error, count
+    global dist1, dist2, error, count
     mesure = get_distance()
         
     if mesure is not None:
