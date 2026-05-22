@@ -8,7 +8,17 @@ i2c = I2C(0, sda=Pin(22), scl=Pin(23), freq=400000)
 
 
 def get_firmware_version(addr):
-    """Récupère la version du firmware du capteur TFMini (ou compatible) via I2C."""
+    """
+        Cette fonction permet de récupérer la version du capteur détecté.
+        On envoie d'abord la commande à l'adresse du capteur pour récupérer sa version puis on lit sa réponse.
+        On formate ensuite les octets qui nous intéresse dans une variable.
+        
+        Args:
+            addr (string): Adresse du capteur
+            
+        Returns:
+            string: Version du capteur trouvée
+    """
     try:
         # Commande version du firmware
         i2c.writeto(addr, b'\x5a\x04\x01\x5f')
@@ -45,13 +55,25 @@ else:
     print("Aucun capteur détecté. Utilisation adresse par défaut 0x10")
     TFMINI_ADDR = 0x10
 
-dist1, dist2 = 0, 0 							# Stockage des 2 dernières valeurs
+dist1, dist2, dist3, moyenne = 0, 0, 0, 0 		# Stockage des 3 dernières valeurs et de la moyenne
 error, count = 0, 0 							# Valeurs des erreurs et du compteur
-max_error = 2   								# Nombre d'erreurs tolérées
-max_marge = 10  								# Variation maximale autorisée (en cm) entre deux mesures
+max_error, max_marge = 2, 10   					# Nombre d'erreurs tolérées et variation maximale autorisée (en cm) entre deux mesures
 timer_period_ms, error_period_ms = 3000, 1000	# Fréquence de mesure normale / erreur détectée
+att_moy = 100									# Attente en ms entre chaque distance mesurée
 
 def get_distance():
+    """
+        Cette fonction permet de récupérer la distance mesurée par un capteur.
+        La commande de lecture de distance est envoyée au capteur et sa réponse est stocker dans la variable data.
+        On vérifie qu'elle soit au bon format puis on récupère les octets indiquant la distance.
+        Un correctif est appliqué sur la distance mais n'est pas obligatoire sur tous les capteurs.
+        
+        Args:
+            ...
+            
+        Returns:
+            int: Distance mesurée en cm
+    """
     try:
         # Commande demande de mesure de distance
         i2c.writeto(TFMINI_ADDR, b'\x5a\x05\x00\x01\x60')
@@ -67,32 +89,58 @@ def get_distance():
             distance = round(distance * 1.05)
             return distance
     except:
+        print("\nErreur dans la récupération de la mesure.")
         return None
     
     return None
 
 
 def get_data(timer):
-    global dist1, dist2, error, count
+    """
+        Cette fonction affiche et gère les mesures.
+        On initialise toutes nos variables à la première mesure pour éviter une erreur en début de boucle.
+        On vérifie si la distance est prise en compte par le capteur et on compare la moyenne avec la précédente.
+        Une fois acceptée, on peut calculer une moyenne à partir de trois valeurs successives puis on affiche les informations.
+        Si la différence entre les deux dernières moyennes est plus élevée que la marge configurée, une erreur est comptée.
+        Trop d'erreur de suite indique qu'il s'agit d'une valeur correcte.
+        
+        Args:
+            timer (timer): Timer par interruption
+            
+        Returns:
+            ...
+    """
+    global dist1, dist2, dist3, moyenne, error, count, att_moy
     mesure = get_distance()
         
     if mesure is not None:
         if dist1 == 0:
+            moyenne = mesure
             dist1 = mesure
             dist2 = mesure
+            dist3 = mesure
         # Vérification mesure physiquement possible
         if 10 < mesure < 1200:
             
             # Accepte la valeur si écart avec mesure précédente correct et erreurs maximales non atteintes
-            if abs(mesure - dist1) <= max_marge and error <= max_error:
+            if abs(mesure - moyenne) <= max_marge and error <= max_error:
                 
-                # Décalage des valeurs
-                dist2 = dist1
+                # Prise de mesure décalée pour calculer une moyenne
+                dist3 = mesure
+                
+                time.sleep_ms(att_moy)
+                mesure = get_distance()
+                dist2 = mesure
+                
+                time.sleep_ms(att_moy)
+                mesure = get_distance()
                 dist1 = mesure
                 
+                moyenne = round((dist1 + dist2 + dist3)/3)
+                
                 # Conversion en 2 octets
-                lsb = dist2 & 0xFF
-                msb = (dist2 >> 8) & 0xFF
+                lsb = moyenne & 0xFF
+                msb = (moyenne >> 8) & 0xFF
                 octets_distance = bytes([lsb, msb])
                 
                 # Réinitialise le compteur d'erreurs car valeur valide
@@ -106,7 +154,7 @@ def get_data(timer):
                 ver = sensor_info.get(TFMINI_ADDR, "N/A")
                 
                 # Affiche les résultats
-                print("[Adresse: {} | Version: {}]\nDistance n°{}: {} cm\nFormat bytes: {}\n\n".format(addr_h, ver, count, dist2, octets_distance))
+                print("[Adresse: {} | Version: {}]\nDistance n°{}: {} cm\nFormat bytes: {}\n\n".format(addr_h, ver, count, moyenne, octets_distance))
                 
                 # Après réinitialisation erreurs: retour au cycle normal
                 if error == 0:
@@ -123,6 +171,7 @@ def get_data(timer):
                     error = 0
                     dist1 = mesure
                     dist2 = mesure
+                    dist3 = mesure
                     timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
                 
         else:
