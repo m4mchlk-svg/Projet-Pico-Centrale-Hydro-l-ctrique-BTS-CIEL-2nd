@@ -1,55 +1,38 @@
+"""
+Script de Test de Communication Série UART pour ESP32 et Modem SIM7080G.
+
+Ce script configure le canal UART 2 de l'ESP32 pour communiquer à 57600 bauds.
+Il envoie une commande AT spécifique (AT+SHCONN) pour demander au modem de
+se connecter à un serveur HTTP, attend une seconde pour la réponse, puis
+lit, décode et affiche tout texte reçu du modem dans la console MicroPython.
+
+Configuration Matérielle (par défaut) :
+- Vitesse : 57600 bauds
+- Broche TX ESP32 (Envoi) : GPIO 17
+- Broche RX ESP32 (Réception) : GPIO 16
+"""
+
 import time
 from machine import UART
 
-def envoyer_commande_at(commande, timeout_sec=1):
-    """Envoie une commande AT au modem et récupère sa réponse textuelle.
+# 1. Configuration de la liaison série
+uart = UART(2, 57600, tx=17, rx=16)
+uart.init(57600, bits=8, parity=None, stop=1)
 
-    Cette fonction centralise la communication série avec le modem SIM7080G.
-    Elle ajoute automatiquement les caractères de fin de ligne, attend la
-    réponse pendant le délai imparti, puis gère le décodage des données reçues.
+# 2. Teste de commande AT (demande de connexion HTTP)
+# \r\n sont les caractères invisibles "Entrée" obligatoires pour valider la commande
+uart.write('AT+SHCONN\r\n') 
 
-    Args:
-        commande (str): La commande AT à envoyer (ex: 'AT', 'AT+SHCONN').
-        timeout_sec (int, float): Le temps d'attente en secondes laissé au 
-            modem pour répondre (par défaut: 1).
+# 3. Pause d'une seconde pour laisser le modem traiter l'ordre et répondre
+time.sleep(1)
 
-    Returns:
-        str: La réponse du modem nettoyée et décodée, ou une chaîne vide 
-            si le modem n'a pas répondu.
-    """
-    # 1. Configuration de la liaison série (UART 2)
-    uart = UART(2, 57600, tx=17, rx=16)
-    uart.init(57600, bits=8, parity=None, stop=1)
-
-    # 2. Nettoyage préventif du buffer (évite de lire de vieux résidus)
-    while uart.any():
-        uart.read()
-
-    # 3. Envoi de la commande avec le retour à la ligne obligatoire (\r\n)
-    uart.write(commande + '\r\n') 
-
-    # 4. Temporisation pour laisser le modem formuler sa réponse
-    time.sleep(timeout_sec)
-
-    # 5. Lecture et traitement de la réponse
-    if uart.any():
-        donnees_brutes = uart.read()
-        
-        # Décodage sécurisé : 'ignore' évite un crash si un caractère bizarre arrive
-        reponse_decodee = donnees_brutes.decode('utf-8', errors='ignore')
-        
-        # Suppression des espaces et sauts de ligne inutiles (strip)
-        return reponse_decodee.strip()
-    
-    return ""
-
-# ==============================================================================
-# EXEMPLE D'UTILISATION
-# ==============================================================================
-if __name__ == "__main__":
-    # Test de la commande de connexion HTTP
-    cmd = 'AT+SHCONN'
-    resultat = envoyer_commande_at(cmd, timeout_sec=1)
-    
-    print(f"Commande envoyée : {cmd}")
-    print(f"Réponse du modem :\n{resultat}")
+# 4. Vérification et lecture de la réponse
+if uart.any():
+    # Lecture des données brutes (octets)
+    result = uart.read()
+    # Traduction des octets en texte lisible (UTF-8)
+    answer = result.decode('utf-8')
+    # Nettoyage des espaces/retours à la ligne inutiles
+    answer = answer.strip()
+    # Affichage du résultat final dans la console
+    print(answer)
