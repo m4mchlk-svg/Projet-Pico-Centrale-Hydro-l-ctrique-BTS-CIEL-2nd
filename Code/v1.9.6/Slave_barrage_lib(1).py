@@ -168,6 +168,15 @@ class LoRaE32:
         print(f"\t * texte2: {texte2}")
         return "$"+str(val3) + "#" + str(val4) + "#" + texte2 + "#" 
 
+    def get_trame_info(self):   # Création d'une trame sous la forme: $ val3 # val4 # texte2 #  
+        water_level = get_distance()
+        etat_vanne = get_state_vanne
+        charge_level, _, _ = read_all_value
+        print(f"\t * val3: {val3}")
+        print(f"\t * val4: {val4}")
+        print(f"\t * texte2: {texte2}")
+        return "$"+str(val3) + "#" + str(val4) + "#" + texte2 + "#" 
+
     def envoyer_trame(self, addr_high, addr_low, CANAL):
         print("\n*** Trame à envoyer ***")
         trame_emision = self.get_trame()        # Sous la forme: "  $ val3 # val4 # texte2 #  "
