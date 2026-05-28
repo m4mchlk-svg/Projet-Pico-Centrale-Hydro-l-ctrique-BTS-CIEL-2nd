@@ -52,7 +52,7 @@ if devices:
     TFMINI_ADDR = devices[0]
 else:
     # Echec scan = adresse par défaut (0x10 pour le TFMini Plus en mode I2C)
-    print("Aucun capteur détecté. Utilisation adresse par défaut 0x10")
+    print("\nAucun capteur détecté. Utilisation adresse par défaut 0x10")
     TFMINI_ADDR = 0x10
 
 dist1, dist2, dist3, moyenne = 0, 0, 0, 0 		# Stockage des 3 dernières valeurs et de la moyenne
@@ -178,7 +178,7 @@ def get_data(timer):
             # Donnée lue mais en dehors des limites du capteur
             count += 1
             print("[Adresse: {}]\nHors limite ({} cm)\n\n".format(hex(TFMINI_ADDR), mesure))
-
+            
 timer_sensor = Timer(0)
 timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
 
