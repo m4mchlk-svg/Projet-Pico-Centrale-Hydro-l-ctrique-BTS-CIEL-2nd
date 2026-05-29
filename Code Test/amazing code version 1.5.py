@@ -127,7 +127,7 @@ def send_thingspeak(api_key, value1, value2):
         print("Réseau perdu avant HTTP, attente du retour du réseau...")
         if not wait_for_network():
             return False
-
+    
     url = "http://api.thingspeak.com"
     # L'URL contient maintenant les deux champs
     get_path = f'/update?api_key={api_key}&field1={value1}&field2={value2}'
@@ -135,80 +135,19 @@ def send_thingspeak(api_key, value1, value2):
     ok = test_http(url, get_path)
     return ok
 
-def init():
-    """
-    Initialise le modem SIM7080G étape par étape via des commandes AT.
-    Retourne la fonction init (valeur truthy) si succès, False sinon.
-    """
-    print("\nInitialisation SIM7080...")
+def init_sim7080():
+    print("Initialisation SIM7080...")
 
-    if send_at('AT'):
-        print("Module SIM7080 présent - liaison série ok !")
-    else:
-        print("Le module ne répond pas correctement.")
-        return False
+    send_at('AT', 1)
+    send_at('AT+CPIN?', 1)
+    send_at('AT+CSQ', 1)
+    send_at('AT+CFUN=1', 2)
+    send_at('AT+CNMP=38', 2)
+    send_at('AT+CMNB=1', 2)
+    send_at('AT+CGDCONT=1,"IP","iot.1nce.net"', 1)
+    send_at('AT+COPS=0', 2)
+    send_at('AT+CEREG=2', 2)
 
-    reponse = send_at('ATE0', 0.5)
-    if reponse:
-        print("L'écho est désactivé")
-    else:
-        print("Problème désactivation de l'écho...")
-
-    reponse = send_at('AT+CPIN?')
-    if reponse and "+CPIN: READY" in reponse:
-        print("Carte SIM détectée et prête")
-    else:
-        print("Problème carte SIM...")
-        return False
-
-    reponse = send_at('AT+CSQ')
-    if reponse and "+CSQ" in reponse:
-        print("Signal radio détecté - " + reponse.strip())
-    else:
-        print("Signal radio introuvable...")
-
-    reponse = send_at('AT+CFUN=1', 2)
-    if reponse and "OK" in reponse:
-        print("Modem en mode pleine fonctionnalité")
-    else:
-        print("Problème activation du modem...")
-        return False
-
-    reponse = send_at('AT+CNMP=38', 2)
-    if reponse and "OK" in reponse:
-        print("Mode réseau : LTE uniquement")
-    else:
-        print("Problème configuration mode réseau...")
-        return False
-
-    reponse = send_at('AT+CMNB=1', 2)
-    if reponse and "OK" in reponse:
-        print("Mode NB-IoT activé")
-    else:
-        print("Problème activation NB-IoT...")
-        return False
-
-    reponse = send_at('AT+CGDCONT=1,"IP","iot.1nce.net"', 1)
-    if reponse and "OK" in reponse:
-        print("Contexte PDP configuré - APN : iot.1nce.net")
-    else:
-        print("Problème configuration APN...")
-        return False
-
-    reponse = send_at('AT+COPS=0', 2)
-    if reponse and "OK" in reponse:
-        print("Sélection opérateur : automatique")
-    else:
-        print("Problème sélection opérateur...")
-        return False
-
-    reponse = send_at('AT+CEREG=2', 2)
-    if reponse and "OK" in reponse:
-        print("Notifications d'enregistrement réseau activées")
-    else:
-        print("Problème activation CEREG...")
-        return False
-    
     if not wait_for_network():
         print("Erreur réseau, arrêt du programme.")
         raise SystemExit
@@ -220,9 +159,9 @@ def init():
         print("Impossible d'activer la DATA, arrêt du programme.")
         raise SystemExit
 
-    print("\nInitialisation terminée avec succès !")
-
 # --- Programme principal ---
+
+init_sim7080()
 
 api_key = "BET2MXURJRI3AVQD"
 temps = 30  
