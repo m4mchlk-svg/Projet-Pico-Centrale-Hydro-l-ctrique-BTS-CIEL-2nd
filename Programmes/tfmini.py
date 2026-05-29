@@ -8,7 +8,7 @@ class TFMiniPlus:
         """
         self.i2c = I2C(i2c_id, sda=Pin(sda_pin), scl=Pin(scl_pin), freq=freq)
         
-        # Détection de l'adresse
+        # Détection adresse
         if address is None:
             devices = self.i2c.scan()
             self.address = devices[0] if devices else 0x10
@@ -17,7 +17,7 @@ class TFMiniPlus:
             
         self.version = self._get_firmware_version()
         
-        # Variables d'état et de traitement
+        # Variables d'état et traitement
         self.dist1 = 0
         self.dist2 = 0
         self.dist3 = 0
@@ -65,14 +65,14 @@ class TFMiniPlus:
         if mesure is None:
             return None
 
-        # Initialisation lors de la première mesure valide
+        # Initialisation première mesure valide
         if self.dist1 == 0:
             self.moyenne = mesure
             self.dist1 = self.dist2 = self.dist3 = mesure
 
-        # Vérification des limites physiques
+        # Vérification limites physiques
         if 10 < mesure < 1200:
-            # Accepte la valeur si l'écart est correct et le max d'erreurs non atteint
+            # Accepte valeur écart correct et max d'erreurs non atteint
             if abs(mesure - self.moyenne) <= self.max_marge and self.error <= self.max_error:
                 
                 self.dist3 = mesure
@@ -83,7 +83,7 @@ class TFMiniPlus:
                 self.dist1 = self.read_raw_distance() or self.dist1
                 
                 self.moyenne = round((self.dist1 + self.dist2 + self.dist3) / 3)
-                self.error = 0  # Réinitialise les erreurs car valeur valide
+                self.error = 0  # Réinitialise erreurs car valeur valide
                 
                 return self.moyenne
             else:
@@ -93,10 +93,10 @@ class TFMiniPlus:
                     self.error = 0
                     self.dist1 = self.dist2 = self.dist3 = self.moyenne = mesure
                     return self.moyenne
-                # En cas d'erreur ignorée (en attendant le recalibrage)
+                # En cas d'erreur ignorée
                 return None
         else:
-            return -1 # Code pour signifier "Hors limite"
+            return -1 # "Hors limite"
             
     def get_distance_bytes(self):
         """Retourne la distance sous forme de 2 octets (LSB, MSB)."""
