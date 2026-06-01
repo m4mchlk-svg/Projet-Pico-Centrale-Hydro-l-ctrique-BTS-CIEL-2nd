@@ -92,7 +92,7 @@ class TFMiniPlus:
                     # Recalibrage après trop d'erreurs
                     self.error = 0
                     self.dist1 = self.dist2 = self.dist3 = self.moyenne = mesure
-                    return self.moyenne
+                    return moyenne
                 # En cas d'erreur ignorée
                 return None
         else:
