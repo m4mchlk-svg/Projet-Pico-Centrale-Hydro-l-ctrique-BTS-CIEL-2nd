@@ -1,108 +1,42 @@
-from machine import I2C, Pin
-import time
+from machine import Timer
+from tfmini import TFMiniPlus # Importe la classe depuis notre nouvelle librairie
 
-class TFMiniPlus:
-    def __init__(self, i2c_id=0, sda_pin=22, scl_pin=23, freq=400000, address=None):
-        """
-        Initialise le capteur TFMini Plus sur le bus I2C.
-        """
-        self.i2c = I2C(i2c_id, sda=Pin(sda_pin), scl=Pin(scl_pin), freq=freq)
-        
-        # Détection adresse
-        if address is None:
-            devices = self.i2c.scan()
-            self.address = devices[0] if devices else 0x10
-        else:
-            self.address = address
-            
-        self.version = self._get_firmware_version()
-        
-        # Variables d'état et traitement
-        self.dist1 = 0
-        self.dist2 = 0
-        self.dist3 = 0
-        self.moyenne = 0
-        self.error = 0
-        
-        # Paramètres de configuration
-        self.max_error = 2
-        self.max_marge = 10
-        self.att_moy = 100
+# 1. Initialisation de l'objet capteur
+# Tu peux changer les pins ici facilement sans toucher à la librairie
+print("Recherche et initialisation du capteur...")
+capteur = TFMiniPlus(i2c_id=0, sda_pin=22, scl_pin=23)
 
-    def _get_firmware_version(self):
-        """Récupère la version du firmware du capteur."""
-        try:
-            self.i2c.writeto(self.address, b'\x5a\x04\x01\x5f')
-            time.sleep_ms(100)
-            res = self.i2c.readfrom(self.address, 7)
-            
-            if len(res) >= 7 and res[0] == 0x5a and res[2] == 0x01:
-                return "V{}.{}.{}".format(res[3], res[4], res[5])
-        except Exception:
-            pass
-        return "Inconnue"
+print("Capteur trouvé à l'adresse :", hex(capteur.address))
+print("Version du firmware :", capteur.version)
 
-    def read_raw_distance(self):
-        """Récupère la distance brute du capteur."""
-        try:
-            self.i2c.writeto(self.address, b'\x5a\x05\x00\x01\x60')
-            data = self.i2c.readfrom(self.address, 9)
-            
-            if len(data) >= 9 and data[0] == 0x59 and data[1] == 0x59:
-                distance = data[2] + (data[3] << 8)
-                return round(distance * 1.05)
-        except Exception:
-            return None
-        return None
+count = 0
 
-    def get_distance(self):
-        """
-        Gère les mesures, le filtrage (erreurs/marges) et la moyenne.
-        Retourne la distance moyenne en cm, ou -1 si hors limite, ou None si erreur.
-        """
-        mesure = self.read_raw_distance()
-        
-        if mesure is None:
-            return None
+# 2. Fonction appelée par le Timer (Callback)
+def update_sensor(timer):
+    global count
+    
+    # On demande la distance traitée à la librairie
+    distance = capteur.get_distance()
+    
+    if distance == -1:
+        print("[Hors limite]")
+    elif distance is not None:
+        count += 1
+        octets = capteur.get_distance_bytes()
+        print(f"Mesure n°{count} | Distance : {distance} cm | Octets : {octets}")
+    else:
+        # Correspond au cas où l'erreur est tolérée avant le recalibrage, ou si lecture échoue
+        print("Erreur de lecture ou variance trop élevée (en attente de recalibrage...)")
 
-        # Initialisation première mesure valide
-        if self.dist1 == 0:
-            self.moyenne = mesure
-            self.dist1 = self.dist2 = self.dist3 = mesure
+# 3. Lancement du Timer
+timer_period_ms = 3000
+timer_sensor = Timer(0)
+timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=update_sensor)
 
-        # Vérification limites physiques
-        if 10 < mesure < 1200:
-            # Accepte valeur écart correct et max d'erreurs non atteint
-            if abs(mesure - self.moyenne) <= self.max_marge and self.error <= self.max_error:
-                
-                self.dist3 = mesure
-                time.sleep_ms(self.att_moy)
-                self.dist2 = self.read_raw_distance() or self.dist2
-                
-                time.sleep_ms(self.att_moy)
-                self.dist1 = self.read_raw_distance() or self.dist1
-                
-                self.moyenne = round((self.dist1 + self.dist2 + self.dist3) / 3)
-                self.error = 0  # Réinitialise erreurs car valeur valide
-                
-                return self.moyenne
-            else:
-                self.error += 1
-                if self.error > self.max_error:
-                    # Recalibrage après trop d'erreurs
-                    self.error = 0
-                    self.dist1 = self.dist2 = self.dist3 = self.moyenne = mesure
-                    return self.moyenne
-                # En cas d'erreur ignorée
-                return None
-        else:
-            return -1 # "Hors limite"
-            
-    def get_distance_bytes(self):
-        """Retourne la distance sous forme de 2 octets (LSB, MSB)."""
-        dist = self.get_distance()
-        if dist is not None and dist != -1:
-            lsb = dist & 0xFF
-            msb = (dist >> 8) & 0xFF
-            return bytes([lsb, msb])
-        return None
+# Boucle principale (le microcontrôleur peut faire autre chose ici)
+try:
+    while True:
+        pass
+except KeyboardInterrupt:
+    timer_sensor.deinit()
+    print("Programme arrêté.")
