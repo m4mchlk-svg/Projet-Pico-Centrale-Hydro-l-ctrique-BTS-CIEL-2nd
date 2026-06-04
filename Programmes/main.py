@@ -22,7 +22,7 @@ def update_sensor(timer):
     elif distance is not None:
         count += 1
         octets = capteur.get_distance_bytes()
-        print(f"Mesure n°{count} | Distance : {distance} cm | Octets : {octets}")
+        print(f"Distance n°{count} | Distance : {distance} cm | Octets : {octets}")
     else:
         print("Erreur de lecture ou variance trop élevée (en attente de recalibrage...)")
 
