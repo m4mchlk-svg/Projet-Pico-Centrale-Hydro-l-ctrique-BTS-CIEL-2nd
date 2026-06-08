@@ -6,6 +6,12 @@ import time
 # Fréquence 400 kHz = Fast Mode I2C
 i2c = I2C(0, sda=Pin(22), scl=Pin(23), freq=400000)
 
+dist1, dist2, dist3, moyenne = 0, 0, 0, 0 		# Stockage des 3 dernières valeurs et de la moyenne
+error, count = 0, 0 							# Valeurs des erreurs et du compteur
+max_error, max_marge = 2, 10   					# Nombre d'erreurs tolérées et variation maximale autorisée (en cm) entre deux mesures
+timer_period_ms, error_period_ms = 3000, 1000	# Fréquence de mesure normale / erreur détectée
+att_moy = 100									# Attente en ms entre chaque distance mesurée
+mesure_hauteur = 0
 
 def get_firmware_version(addr):
     """
@@ -54,13 +60,6 @@ else:
     # Echec scan = adresse par défaut (0x10 pour le TFMini Plus en mode I2C)
     print("\nAucun capteur détecté. Utilisation adresse par défaut 0x10")
     TFMINI_ADDR = 0x10
-
-dist1, dist2, dist3, moyenne = 0, 0, 0, 0 		# Stockage des 3 dernières valeurs et de la moyenne
-error, count = 0, 0 							# Valeurs des erreurs et du compteur
-max_error, max_marge = 2, 10   					# Nombre d'erreurs tolérées et variation maximale autorisée (en cm) entre deux mesures
-timer_period_ms, error_period_ms = 3000, 1000	# Fréquence de mesure normale / erreur détectée
-att_moy = 100									# Attente en ms entre chaque distance mesurée
-mesure_hauteur = 0
 
 def get_distance():
     """
