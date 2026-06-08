@@ -173,7 +173,7 @@ def use_data():
                     # Erreurs maximales atteintes = réinitialisation des variables + reprise du cycle normal
                     print("Erreurs multiples, recalibrage...\n\n")
                     error = 0
-                    moyenne = mesure  # <-- Correctif technique indispensable pour sortir de la boucle d'erreur
+                    moyenne = mesure
                     dist1 = mesure
                     dist2 = mesure
                     dist3 = mesure
