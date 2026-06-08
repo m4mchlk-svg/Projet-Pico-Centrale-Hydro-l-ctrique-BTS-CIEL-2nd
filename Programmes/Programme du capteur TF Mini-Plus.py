@@ -6,12 +6,13 @@ import time
 # Fréquence 400 kHz = Fast Mode I2C
 i2c = I2C(0, sda=Pin(22), scl=Pin(23), freq=400000)
 
-dist1, dist2, dist3, moyenne = 0, 0, 0, 0 		# Stockage des 3 dernières valeurs et de la moyenne
+dist1, dist2, dist3, hauteur = 0, 0, 0, 0 		# Stockage des 3 dernières valeurs et de la moyenne
 error, count = 0, 0 							# Valeurs des erreurs et du compteur
 max_error, max_marge = 2, 10   					# Nombre d'erreurs tolérées et variation maximale autorisée (en cm) entre deux mesures
-timer_period_ms, error_period_ms = 3000, 1000	# Fréquence de mesure normale / erreur détectée
+timer_period_ms, error_period_ms = 1000, 250	# Fréquence de mesure normale / erreur détectée
 att_moy = 100									# Attente en ms entre chaque distance mesurée
 mesure_hauteur = 0
+prep = 2
 
 def get_firmware_version(addr):
     """
@@ -110,12 +111,12 @@ def use_data():
         Returns:
             ...
     """
-    global dist1, dist2, dist3, moyenne, error, count, att_moy
+    global dist1, dist2, dist3, hauteur, error, count, att_moy, prep
     mesure = get_distance()
         
     if mesure is not None:
         if dist1 == 0:
-            moyenne = mesure
+            hauteur = mesure
             dist1 = mesure
             dist2 = mesure
             dist3 = mesure
@@ -123,7 +124,7 @@ def use_data():
         if 10 < mesure < 1200:
             
             # Accepte la valeur si écart avec mesure précédente correct et erreurs maximales non atteintes
-            if abs(mesure - moyenne) <= max_marge and error <= max_error:
+            if abs(mesure - hauteur) <= max_marge:
                 
                 # Prise de mesure décalée pour calculer une moyenne
                 dist3 = mesure
@@ -139,11 +140,11 @@ def use_data():
                 if mesure is None: mesure = dist2
                 dist1 = mesure
                 
-                moyenne = round((dist1 + dist2 + dist3)/3)
+                hauteur = round((dist1 + dist2 + dist3)/3)
                 
                 # Conversion en 2 octets
-                lsb = moyenne & 0xFF
-                msb = (moyenne >> 8) & 0xFF
+                lsb = hauteur & 0xFF
+                msb = (hauteur >> 8) & 0xFF
                 octets_distance = bytes([lsb, msb])
                 
                 # Réinitialise le compteur d'erreurs car valeur valide
@@ -157,33 +158,44 @@ def use_data():
                 ver = sensor_info.get(TFMINI_ADDR, "N/A")
                 
                 # Affiche les résultats
-                print("[Adresse: {} | Version: {}]\nDistance n°{}: {} cm\nFormat bytes: {}\n\n".format(addr_h, ver, count, moyenne, octets_distance))
+                if count > prep:
+                    print("[Adresse: {} | Version: {}]\nDistance n°{}: {} cm\nFormat bytes: {}\n\n".format(addr_h, ver, count, hauteur, octets_distance))
                 
                 # Après réinitialisation erreurs: retour au cycle normal
                 if error == 0:
                     timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=interrupt_hauteur)
+                    
+                if count > prep:    
+                    return hauteur
+                else:
+                    return HAUTEUR_SOUHAITE
             else:
                 # Variance trop élevée = ignorée + erreur + temps de mesure raccourci
                 timer_sensor.init(mode=Timer.PERIODIC, period=error_period_ms, callback=interrupt_hauteur)
                 error += 1
-                print(f"{error} erreur(s)\n")
+                if count > prep:
+                    print(f"{error} erreur(s)\n")
+                hauteur = 40
             
                 if error > max_error:
                     # Erreurs maximales atteintes = réinitialisation des variables + reprise du cycle normal
-                    print("Erreurs multiples, recalibrage...\n\n")
+                    if count > prep:
+                        print("Erreurs multiples, recalibrage...\n\n")
                     error = 0
-                    moyenne = mesure
+                    hauteur = mesure
                     dist1 = mesure
                     dist2 = mesure
                     dist3 = mesure
                     timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=interrupt_hauteur)
-                
+                    
+                return hauteur
+            
         else:
             # Donnée lue mais en dehors des limites du capteur
             count += 1
             print("[Adresse: {}]\nHors limite ({} cm)\n\n".format(hex(TFMINI_ADDR), mesure))
-        
-    return moyenne
+            
+            return HAUTEUR_SOUHAITE
             
 def interrupt_hauteur(timer):
     global mesure_hauteur
@@ -195,5 +207,5 @@ timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=interrup
 
 while True:
     if mesure_hauteur == 1:
-        use_data()
+        hauteur = use_data()
         mesure_hauteur = 0
