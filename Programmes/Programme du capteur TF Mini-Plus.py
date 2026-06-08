@@ -183,6 +183,8 @@ def use_data():
             # Donnée lue mais en dehors des limites du capteur
             count += 1
             print("[Adresse: {}]\nHors limite ({} cm)\n\n".format(hex(TFMINI_ADDR), mesure))
+        
+    return moyenne
             
 def interrupt_hauteur(timer):
     global mesure_hauteur
