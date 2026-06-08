@@ -60,6 +60,7 @@ error, count = 0, 0 							# Valeurs des erreurs et du compteur
 max_error, max_marge = 2, 10   					# Nombre d'erreurs tolérées et variation maximale autorisée (en cm) entre deux mesures
 timer_period_ms, error_period_ms = 3000, 1000	# Fréquence de mesure normale / erreur détectée
 att_moy = 100									# Attente en ms entre chaque distance mesurée
+mesure_hauteur = 0
 
 def get_distance():
     """
@@ -95,7 +96,7 @@ def get_distance():
     return None
 
 
-def get_data(timer):
+def use_data():
     """
         Cette fonction affiche et gère les mesures.
         On initialise toutes nos variables à la première mesure pour éviter une erreur en début de boucle.
@@ -130,10 +131,13 @@ def get_data(timer):
                 
                 time.sleep_ms(att_moy)
                 mesure = get_distance()
+                # Sécurité au cas où une mesure intermédiaire renverrait None
+                if mesure is None: mesure = dist3
                 dist2 = mesure
                 
                 time.sleep_ms(att_moy)
                 mesure = get_distance()
+                if mesure is None: mesure = dist2
                 dist1 = mesure
                 
                 moyenne = round((dist1 + dist2 + dist3)/3)
@@ -158,10 +162,10 @@ def get_data(timer):
                 
                 # Après réinitialisation erreurs: retour au cycle normal
                 if error == 0:
-                    timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
+                    timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=interrupt_hauteur)
             else:
                 # Variance trop élevée = ignorée + erreur + temps de mesure raccourci
-                timer_sensor.init(mode=Timer.PERIODIC, period=error_period_ms, callback=get_data)
+                timer_sensor.init(mode=Timer.PERIODIC, period=error_period_ms, callback=interrupt_hauteur)
                 error += 1
                 print(f"{error} erreur(s)\n")
             
@@ -169,18 +173,26 @@ def get_data(timer):
                     # Erreurs maximales atteintes = réinitialisation des variables + reprise du cycle normal
                     print("Erreurs multiples, recalibrage...\n\n")
                     error = 0
+                    moyenne = mesure  # <-- Correctif technique indispensable pour sortir de la boucle d'erreur
                     dist1 = mesure
                     dist2 = mesure
                     dist3 = mesure
-                    timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
+                    timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=interrupt_hauteur)
                 
         else:
             # Donnée lue mais en dehors des limites du capteur
             count += 1
             print("[Adresse: {}]\nHors limite ({} cm)\n\n".format(hex(TFMINI_ADDR), mesure))
             
+def interrupt_hauteur(timer):
+    global mesure_hauteur
+    mesure_hauteur = 1
+    return mesure_hauteur
+            
 timer_sensor = Timer(0)
-timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=get_data)
+timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=interrupt_hauteur)
 
 while True:
-    pass
+    if mesure_hauteur == 1:
+        use_data()
+        mesure_hauteur = 0
