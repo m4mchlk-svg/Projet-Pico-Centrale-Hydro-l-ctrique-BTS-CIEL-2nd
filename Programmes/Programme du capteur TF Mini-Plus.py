@@ -164,18 +164,15 @@ def use_data():
                 # Après réinitialisation erreurs: retour au cycle normal
                 if error == 0:
                     timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=interrupt_hauteur)
-                    
-                if count > prep:    
-                    return hauteur
-                else:
-                    return HAUTEUR_SOUHAITE
+                        
+                return hauteur
+            
             else:
                 # Variance trop élevée = ignorée + erreur + temps de mesure raccourci
                 timer_sensor.init(mode=Timer.PERIODIC, period=error_period_ms, callback=interrupt_hauteur)
                 error += 1
                 if count > prep:
                     print(f"{error} erreur(s)\n")
-                hauteur = 40
             
                 if error > max_error:
                     # Erreurs maximales atteintes = réinitialisation des variables + reprise du cycle normal
@@ -195,7 +192,7 @@ def use_data():
             count += 1
             print("[Adresse: {}]\nHors limite ({} cm)\n\n".format(hex(TFMINI_ADDR), mesure))
             
-            return HAUTEUR_SOUHAITE
+            return hauteur
             
 def interrupt_hauteur(timer):
     global mesure_hauteur
