@@ -9,10 +9,11 @@ i2c = I2C(0, sda=Pin(23), scl=Pin(25), freq=400000)
 dist1, dist2, dist3, hauteur = 0, 0, 0, 0 		# Stockage des 3 dernières valeurs et de la moyenne
 error, count = 0, 0 							# Valeurs des erreurs et du compteur
 max_error, max_marge = 2, 10   					# Nombre d'erreurs tolérées et variation maximale autorisée (en cm) entre deux mesures
-timer_period_ms, error_period_ms = 1000, 250	# Fréquence de mesure normale / erreur détectée
+timer_period_ms, error_period_ms = 3000, 1000	# Fréquence de mesure normale / erreur détectée
 att_moy = 100									# Attente en ms entre chaque distance mesurée
 mesure_hauteur = 0
 prep = 2
+calibr = (timer_period_ms*(prep+1))/1000
 
 def get_firmware_version(addr):
     """
@@ -205,6 +206,7 @@ timer_sensor = Timer(0)
 timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=interrupt_hauteur)
 
 print("Démarrage du programme de mesure...")
+print("Mesures de calibration en cours... ({} s)\n\n".format(calibr))
 while True:
     if mesure_hauteur == 1:
         hauteur = use_data()
