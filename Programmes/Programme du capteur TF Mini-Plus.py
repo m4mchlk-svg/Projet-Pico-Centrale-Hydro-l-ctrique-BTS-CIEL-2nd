@@ -11,9 +11,9 @@ error, count = 0, 0 							# Valeurs des erreurs et du compteur
 max_error, max_marge = 2, 10   					# Nombre d'erreurs tolérées et variation maximale autorisée (en cm) entre deux mesures
 timer_period_ms, error_period_ms = 3000, 1000	# Fréquence de mesure normale / erreur détectée
 att_moy = 100									# Attente en ms entre chaque distance mesurée
-mesure_hauteur = 0
-prep = 2
-calibr = (timer_period_ms*(prep+1))/1000
+mesure_hauteur = 0								# Flag du timer
+prep, correctif = 0, 1.1						# Nombre mesure préparation / correctif appliqué à la mesure
+calibr = (timer_period_ms*(prep+1))/1000		# Calcul du temps de calibration au démarrage
 
 def get_firmware_version(addr):
     """
@@ -90,7 +90,7 @@ def get_distance():
             # Distance codée sur 2 octets
             # Octet 2 (poids faible) + octet 3 (poids fort) décalé de 8 bits vers la gauche
             distance = data[2] + (data[3] << 8)
-            distance = round(distance * 1.05)
+            distance = round(distance * correctif)
             return distance
     except:
         print("\nErreur dans la récupération de la mesure.")
@@ -211,4 +211,3 @@ while True:
     if mesure_hauteur == 1:
         hauteur = use_data()
         mesure_hauteur = 0
-    time.sleep_ms(10)  # Petite pause pour soulager le processeur et stabiliser la boucle principale
