@@ -4,7 +4,7 @@ import time
 # Initialisation du bus I2C
 # Pins configurable
 # Fréquence 400 kHz = Fast Mode I2C
-i2c = I2C(0, sda=Pin(22), scl=Pin(23), freq=400000)
+i2c = I2C(0, sda=Pin(23), scl=Pin(25), freq=400000)
 
 dist1, dist2, dist3, hauteur = 0, 0, 0, 0 		# Stockage des 3 dernières valeurs et de la moyenne
 error, count = 0, 0 							# Valeurs des erreurs et du compteur
@@ -29,7 +29,7 @@ def get_firmware_version(addr):
     try:
         # Commande version du firmware
         i2c.writeto(addr, b'\x5a\x04\x01\x5f')
-        time.sleep_ms(100)
+        time.sleep_ms(20) # Temps d'attente ajusté pour éviter le gel du bus
         
         # Lecture 7 octets de réponse
         res = i2c.readfrom(addr, 7)
@@ -61,6 +61,7 @@ else:
     # Echec scan = adresse par défaut (0x10 pour le TFMini Plus en mode I2C)
     print("\nAucun capteur détecté. Utilisation adresse par défaut 0x10")
     TFMINI_ADDR = 0x10
+    sensor_info[0x10] = "Inconnue"
 
 def get_distance():
     """
@@ -78,6 +79,7 @@ def get_distance():
     try:
         # Commande demande de mesure de distance
         i2c.writeto(TFMINI_ADDR, b'\x5a\x05\x00\x01\x60')
+        time.sleep_ms(15) # Laisse le temps au capteur de préparer la trame de données
         
         # Lecture 9 octets de données de mesure
         data = i2c.readfrom(TFMINI_ADDR, 9)
@@ -202,7 +204,9 @@ def interrupt_hauteur(timer):
 timer_sensor = Timer(0)
 timer_sensor.init(mode=Timer.PERIODIC, period=timer_period_ms, callback=interrupt_hauteur)
 
+print("Démarrage du programme de mesure...")
 while True:
     if mesure_hauteur == 1:
         hauteur = use_data()
         mesure_hauteur = 0
+    time.sleep_ms(10)  # Petite pause pour soulager le processeur et stabiliser la boucle principale
